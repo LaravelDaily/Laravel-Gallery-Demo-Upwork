@@ -5,6 +5,9 @@
     <div class="aspect-square bg-gray-200 dark:bg-gray-700 overflow-hidden">
         @if($artwork->hasMedia('artworks'))
             <img src="{{ $artwork->getFirstMediaUrl('artworks', 'thumbnail') }}"
+                 srcset="{{ $artwork->getFirstMediaUrl('artworks', 'thumbnail') }} 400w,
+                         {{ $artwork->getFirstMediaUrl('artworks', 'medium') }} 800w"
+                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
                  alt="{{ $artwork->title }}"
                  loading="lazy"
                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">

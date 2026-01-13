@@ -11,6 +11,8 @@ class ArtworkController extends Controller
     {
         abort_unless($artwork->is_published, 404);
 
+        $artwork->load(['category', 'media']);
+
         return view('artworks.show', compact('artwork'));
     }
 }

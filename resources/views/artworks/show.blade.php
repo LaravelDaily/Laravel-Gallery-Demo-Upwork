@@ -29,7 +29,11 @@
                                 <div class="aspect-square bg-gray-200 dark:bg-gray-700 cursor-pointer"
                                      @click="lightboxOpen = true">
                                     <img src="{{ $artwork->getFirstMediaUrl('artworks', 'medium') }}"
+                                         srcset="{{ $artwork->getFirstMediaUrl('artworks', 'thumbnail') }} 400w,
+                                                 {{ $artwork->getFirstMediaUrl('artworks', 'medium') }} 800w"
+                                         sizes="(max-width: 1024px) 100vw, 50vw"
                                          alt="{{ $artwork->title }}"
+                                         loading="eager"
                                          class="w-full h-full object-contain hover:opacity-90 transition-opacity">
                                 </div>
 

@@ -59,12 +59,14 @@ class Artwork extends Model implements HasMedia
             ->width(400)
             ->height(400)
             ->sharpen(10)
+            ->format('webp')
             ->performOnCollections('artworks');
 
         $this->addMediaConversion('medium')
             ->width(800)
             ->height(800)
             ->sharpen(10)
+            ->format('webp')
             ->performOnCollections('artworks');
     }
 }
