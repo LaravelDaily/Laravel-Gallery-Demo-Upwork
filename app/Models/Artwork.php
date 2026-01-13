@@ -46,16 +46,25 @@ class Artwork extends Model implements HasMedia
         return $this->belongsTo(Category::class);
     }
 
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('artworks')
+            ->useDisk('public')
+            ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp']);
+    }
+
     public function registerMediaConversions(?Media $media = null): void
     {
         $this->addMediaConversion('thumbnail')
             ->width(400)
             ->height(400)
-            ->sharpen(10);
+            ->sharpen(10)
+            ->performOnCollections('artworks');
 
         $this->addMediaConversion('medium')
             ->width(800)
             ->height(800)
-            ->sharpen(10);
+            ->sharpen(10)
+            ->performOnCollections('artworks');
     }
 }
