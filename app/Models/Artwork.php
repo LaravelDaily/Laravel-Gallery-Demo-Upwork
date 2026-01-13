@@ -49,7 +49,7 @@ class Artwork extends Model implements HasMedia
     public function registerMediaCollections(): void
     {
         $this->addMediaCollection('artworks')
-            ->useDisk('public')
+            ->useDisk(config('filesystems.default') === 'local' ? 'public' : config('filesystems.default'))
             ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp']);
     }
 

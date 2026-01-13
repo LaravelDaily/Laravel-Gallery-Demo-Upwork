@@ -1,4 +1,8 @@
-<x-layouts.gallery :title="$artwork->title . ' - Art Gallery'" :description="Str::limit($artwork->description, 160)">
+<x-layouts.gallery
+    :title="$artwork->title . ' - Art Gallery'"
+    :description="Str::limit($artwork->description, 160)"
+    ogType="article"
+    :ogImage="$artwork->hasMedia('artworks') ? $artwork->getFirstMediaUrl('artworks', 'medium') : null">
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
                 <!-- Breadcrumb -->
                 <nav class="mb-8" aria-label="Breadcrumb">
@@ -32,7 +36,7 @@
                                          srcset="{{ $artwork->getFirstMediaUrl('artworks', 'thumbnail') }} 400w,
                                                  {{ $artwork->getFirstMediaUrl('artworks', 'medium') }} 800w"
                                          sizes="(max-width: 1024px) 100vw, 50vw"
-                                         alt="{{ $artwork->title }}"
+                                         alt="{{ $artwork->title }} by {{ $artwork->artist_name }}"
                                          loading="eager"
                                          class="w-full h-full object-contain hover:opacity-90 transition-opacity">
                                 </div>
@@ -50,7 +54,7 @@
                                         </svg>
                                     </button>
                                     <img src="{{ $artwork->getFirstMediaUrl('artworks') }}"
-                                         alt="{{ $artwork->title }}"
+                                         alt="{{ $artwork->title }} by {{ $artwork->artist_name }}"
                                          class="max-h-full max-w-full object-contain">
                                 </div>
                             @else

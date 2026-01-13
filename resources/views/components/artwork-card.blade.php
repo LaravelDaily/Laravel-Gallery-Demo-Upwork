@@ -8,7 +8,7 @@
                  srcset="{{ $artwork->getFirstMediaUrl('artworks', 'thumbnail') }} 400w,
                          {{ $artwork->getFirstMediaUrl('artworks', 'medium') }} 800w"
                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
-                 alt="{{ $artwork->title }}"
+                 alt="{{ $artwork->title }} by {{ $artwork->artist_name }}"
                  loading="lazy"
                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
         @else

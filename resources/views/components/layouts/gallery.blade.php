@@ -7,6 +7,30 @@
     @if(isset($description))
         <meta name="description" content="{{ $description }}">
     @endif
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="{{ $ogType ?? 'website' }}">
+    <meta property="og:url" content="{{ $ogUrl ?? url()->current() }}">
+    <meta property="og:title" content="{{ $ogTitle ?? $title ?? 'Art Gallery' }}">
+    @if(isset($description))
+        <meta property="og:description" content="{{ $description }}">
+    @endif
+    @if(isset($ogImage))
+        <meta property="og:image" content="{{ $ogImage }}">
+    @endif
+    <meta property="og:site_name" content="Art Gallery">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="{{ url()->current() }}">
+    <meta property="twitter:title" content="{{ $ogTitle ?? $title ?? 'Art Gallery' }}">
+    @if(isset($description))
+        <meta property="twitter:description" content="{{ $description }}">
+    @endif
+    @if(isset($ogImage))
+        <meta property="twitter:image" content="{{ $ogImage }}">
+    @endif
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
 </head>
