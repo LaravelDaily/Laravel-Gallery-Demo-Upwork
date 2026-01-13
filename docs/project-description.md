@@ -3,11 +3,11 @@ I am looking for a skilled PHP developer to build a clean, responsive web-based 
 
 Core Tech Stack:
 
-Backend: PHP (Framework preferred: Laravel, CodeIgniter, or Slim).
-
-Database: MySQL.
-
-Frontend: Simple Bootstrap or Tailwind CSS (Clean, gallery-style UI).
+Backend: Laravel 12
+Database: MySQL
+Frontend: Simple Tailwind CSS (Clean, gallery-style UI)
+Admin panel: Filament 4
+Image management: spatie/laravel-medialibrary
 
 Key Features Required (The MVP):
 
