@@ -45,6 +45,15 @@ This document outlines the implementation phases for the Art Gallery application
 | 1.3.4 | ✅ | Create `ArtworkSeeder` with sample artworks and images |
 | 1.3.5 | ✅ | Update `DatabaseSeeder` to include gallery seeders |
 
+### Phase 1 Tests Required
+
+| Test | Description |
+|------|-------------|
+| Category auto-generates slug from name | Creating category with name auto-populates slug |
+| Artwork auto-generates slug from title | Creating artwork with title auto-populates slug |
+| Artwork scoped to published only | `published()` scope returns only is_published=true |
+| Category artworks count is accurate | `artworks_count` relationship count works |
+
 ---
 
 ## Phase 2: Admin Panel (Filament)
@@ -90,6 +99,32 @@ This document outlines the implementation phases for the Art Gallery application
 | 2.3.8 | ✅ | Configure bulk delete action |
 | 2.3.9 | ✅ | Add publish/unpublish toggle |
 | 2.3.10 | ✅ | Write Filament smoke tests for ArtworkResource |
+
+### Phase 2 Tests Required
+
+**CategoryResource Tests (US-4.1, US-4.2, US-4.3, US-4.4):**
+| Test | Description |
+|------|-------------|
+| Can render categories list page | Smoke test for ListCategories |
+| Can render create category page | Smoke test for CreateCategory |
+| Can create category | Form creates record in database |
+| Can render edit category page | Smoke test for EditCategory |
+| Can update category | Form updates record |
+| Can delete empty category | Delete removes category without artworks |
+| Cannot delete category with artworks | Delete blocked when artworks assigned (business rule) |
+
+**ArtworkResource Tests (US-3.1, US-3.2, US-3.3, US-3.4, US-3.5):**
+| Test | Description |
+|------|-------------|
+| Can render artworks list page | Smoke test for ListArtworks |
+| Can render create artwork page | Smoke test for CreateArtwork |
+| Can create artwork with image upload | Form creates record with media attached via SpatieMediaLibraryFileUpload |
+| Can render edit artwork page | Smoke test for EditArtwork |
+| Can update artwork | Form updates record |
+| Can replace artwork image | Uploading new image replaces existing media |
+| Can delete artwork and its media | Delete removes artwork record and associated media files |
+| Can toggle publish status | Publish/unpublish action works |
+| Can filter artworks by category | Category filter returns correct subset |
 
 ---
 
@@ -138,6 +173,25 @@ This document outlines the implementation phases for the Art Gallery application
 | 3.3.7 | ✅ | Ensure responsive layout |
 | 3.3.8 | ✅ | Handle 404 for non-existent or unpublished artworks |
 
+### Phase 3 Tests Required
+
+**Gallery Homepage Tests (US-2.1, US-2.2):**
+| Test | Description |
+|------|-------------|
+| Homepage displays only published artworks | Unpublished artworks are hidden from visitors |
+| Homepage orders artworks by newest first | Most recent published_at appears first |
+| Homepage shows empty state when no artworks | Appropriate message when collection empty |
+| Category filter returns matching artworks | Selecting category shows only that category's artworks |
+| Category filter via URL query param works | `?category=slug` filters correctly (shareable links) |
+
+**Artwork Detail Page Tests (US-2.3):**
+| Test | Description |
+|------|-------------|
+| Published artwork is accessible by slug | GET `/artworks/{slug}` returns 200 for published |
+| Unpublished artwork returns 404 | is_published=false artwork not accessible to visitors |
+| Non-existent slug returns 404 | GET `/artworks/fake-slug` returns 404 |
+| Detail page displays artwork info | Title, artist, description, medium, category visible |
+
 ---
 
 ## Phase 4: Media Management & Performance
@@ -164,6 +218,15 @@ This document outlines the implementation phases for the Art Gallery application
 | 4.2.2 | ✅ | Ensure gallery loads under 3 seconds |
 | 4.2.3 | ✅ | Minimize JavaScript bundle size |
 | 4.2.4 | ✅ | Configure browser caching headers |
+
+### Phase 4 Tests Required
+
+| Test | Description |
+|------|-------------|
+| Artwork media generates thumbnail conversion | Uploading image creates 400x400 webp thumbnail |
+| Artwork media generates medium conversion | Uploading image creates 800x800 webp medium size |
+| Gallery displays correct image conversion | Homepage uses thumbnail, detail page uses original |
+| Gallery query eager loads categories | No N+1 queries when loading artworks with categories |
 
 ---
 
@@ -204,6 +267,13 @@ This document outlines the implementation phases for the Art Gallery application
 | 5.3.3 | ✅ | Configure production image storage (if needed) |
 | 5.3.4 | ✅ | Final code review and Pint formatting |
 
+### Phase 5 Tests Required
+
+| Test | Description |
+|------|-------------|
+| Artwork detail page has dynamic meta tags | Title and Open Graph tags include artwork data |
+| Sitemap includes only published artworks | Published in sitemap, unpublished excluded |
+
 ---
 
 ## Phase 6: Demo Data with Real Images
@@ -218,6 +288,13 @@ This document outlines the implementation phases for the Art Gallery application
 | 6.1.3 | ✅ | Ensure automatic thumbnail generation via media conversions |
 | 6.1.4 | ✅ | Run `php artisan migrate:fresh --seed` to regenerate demo data |
 | 6.1.5 | ✅ | Verify all artworks have proper images and thumbnails |
+
+### Phase 6 Tests Required
+
+| Test | Description |
+|------|-------------|
+| Seeder creates artworks with media | Seeded artworks have attached images |
+| Seeded artworks have thumbnail conversions | Media conversions are generated |
 
 ---
 
