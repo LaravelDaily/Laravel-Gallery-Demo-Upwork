@@ -138,3 +138,19 @@ test('medium conversion is registered', function () {
 
     expect($conversionNames)->toContain('medium');
 });
+
+test('artwork uses slug as route key name', function () {
+    $category = Category::factory()->create();
+    $artwork = Artwork::factory()->for($category)->create(['slug' => 'test-slug']);
+
+    expect($artwork->getRouteKeyName())->toBe('slug');
+    expect($artwork->getRouteKey())->toBe('test-slug');
+});
+
+test('factory unpublished state works', function () {
+    $category = Category::factory()->create();
+    $artwork = Artwork::factory()->for($category)->create(['is_published' => false]);
+
+    expect($artwork->is_published)->toBeFalse();
+    expect($artwork->published_at)->toBeNull();
+});

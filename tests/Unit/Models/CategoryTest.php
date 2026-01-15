@@ -75,3 +75,10 @@ test('category artworks relationship is empty for new category', function () {
 
     expect($category->artworks)->toBeInstanceOf(Collection::class)->toBeEmpty();
 });
+
+test('category uses slug as route key name', function () {
+    $category = Category::factory()->create(['slug' => 'test-category-slug']);
+
+    expect($category->getRouteKeyName())->toBe('slug');
+    expect($category->getRouteKey())->toBe('test-category-slug');
+});

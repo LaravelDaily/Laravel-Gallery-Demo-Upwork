@@ -187,3 +187,14 @@ test('adds cache headers to nested build paths', function () {
         ->toContain('max-age=31536000')
         ->toContain('immutable');
 });
+
+test('does not add cache headers to JSON API endpoints', function () {
+    $middleware = new AddCacheHeaders;
+
+    $request = Request::create('/api/artworks', 'GET');
+    $response = $middleware->handle($request, fn () => new Response('OK'));
+
+    $cacheControl = $response->headers->get('Cache-Control');
+
+    expect($cacheControl)->not->toContain('immutable');
+});

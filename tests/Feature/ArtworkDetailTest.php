@@ -133,3 +133,13 @@ test('artwork can be accessed by slug', function () {
         ->assertSuccessful()
         ->assertSee('Test Artwork');
 });
+
+test('numeric ID in URL returns 404', function () {
+    $category = Category::factory()->create();
+    $artwork = Artwork::factory()->for($category)->create([
+        'is_published' => true,
+    ]);
+
+    get('/artworks/'.$artwork->id)
+        ->assertNotFound();
+});

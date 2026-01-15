@@ -203,3 +203,98 @@ test('can bulk delete artworks', function () {
         ]);
     }
 });
+
+test('can sort artworks by created date', function () {
+    $oldest = Artwork::factory()->create(['created_at' => now()->subDays(3)]);
+    $middle = Artwork::factory()->create(['created_at' => now()->subDays(2)]);
+    $newest = Artwork::factory()->create(['created_at' => now()->subDay()]);
+
+    Livewire::test(\App\Filament\Resources\Artworks\Pages\ListArtworks::class)
+        ->sortTable('created_at')
+        ->assertCanSeeTableRecords([$oldest, $middle, $newest], inOrder: true)
+        ->sortTable('created_at', 'desc')
+        ->assertCanSeeTableRecords([$newest, $middle, $oldest], inOrder: true);
+});
+
+test('toggling to published sets published_at', function () {
+    $artwork = Artwork::factory()->create([
+        'is_published' => false,
+        'published_at' => null,
+    ]);
+
+    expect($artwork->published_at)->toBeNull();
+
+    Livewire::test(\App\Filament\Resources\Artworks\Pages\ListArtworks::class)
+        ->callTableAction('toggle_publish', $artwork);
+
+    $artwork->refresh();
+    expect($artwork->is_published)->toBeTrue();
+    expect($artwork->published_at)->not->toBeNull();
+});
+
+test('can update slug independently of title', function () {
+    $artwork = Artwork::factory()->create([
+        'title' => 'Original Title',
+        'slug' => 'original-title',
+    ]);
+
+    Livewire::test(\App\Filament\Resources\Artworks\Pages\EditArtwork::class, [
+        'record' => $artwork->getRouteKey(),
+    ])
+        ->fillForm([
+            'slug' => 'custom-new-slug',
+        ])
+        ->call('save')
+        ->assertNotified();
+
+    expect($artwork->refresh())
+        ->title->toBe('Original Title')
+        ->slug->toBe('custom-new-slug');
+});
+
+test('cannot create artwork without artist name', function () {
+    $category = Category::factory()->create();
+
+    Livewire::test(\App\Filament\Resources\Artworks\Pages\CreateArtwork::class)
+        ->fillForm([
+            'title' => 'Test Artwork',
+            'slug' => 'test-artwork',
+            'artist_name' => '',
+            'category_id' => $category->id,
+        ])
+        ->call('create')
+        ->assertHasFormErrors(['artist_name' => 'required']);
+});
+
+test('cannot create artwork without category', function () {
+    Livewire::test(\App\Filament\Resources\Artworks\Pages\CreateArtwork::class)
+        ->fillForm([
+            'title' => 'Test Artwork',
+            'slug' => 'test-artwork',
+            'artist_name' => 'Test Artist',
+            'category_id' => null,
+        ])
+        ->call('create')
+        ->assertHasFormErrors(['category_id' => 'required']);
+});
+
+test('cannot create artwork with title exceeding 255 chars', function () {
+    $category = Category::factory()->create();
+
+    Livewire::test(\App\Filament\Resources\Artworks\Pages\CreateArtwork::class)
+        ->fillForm([
+            'title' => str_repeat('a', 256),
+            'slug' => 'test-artwork',
+            'artist_name' => 'Test Artist',
+            'category_id' => $category->id,
+        ])
+        ->call('create')
+        ->assertHasFormErrors(['title' => 'max']);
+});
+
+test('unauthenticated user cannot access artwork resource', function () {
+    auth()->logout();
+
+    $this->get(ArtworkResource::getUrl('index'))
+        ->assertRedirect(route('filament.admin.auth.login'));
+});

@@ -41,6 +41,11 @@ class Artwork extends Model implements HasMedia
         });
     }
 
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
+    }
+
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);

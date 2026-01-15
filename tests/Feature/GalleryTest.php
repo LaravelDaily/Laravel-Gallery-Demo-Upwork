@@ -151,3 +151,66 @@ test('empty state shows different message when filtering', function () {
         ->assertSee('No artworks found')
         ->assertSee('Try selecting a different category or view all artworks');
 });
+
+test('can load gallery with category URL parameter', function () {
+    $category = Category::factory()->create();
+    $artwork = Artwork::factory()->for($category)->create([
+        'is_published' => true,
+        'title' => 'Category Artwork',
+    ]);
+
+    $otherCategory = Category::factory()->create();
+    $otherArtwork = Artwork::factory()->for($otherCategory)->create([
+        'is_published' => true,
+        'title' => 'Other Artwork',
+    ]);
+
+    get(route('gallery.index', ['category' => $category->id]))
+        ->assertSuccessful()
+        ->assertSee('Category Artwork')
+        ->assertDontSee('Other Artwork');
+});
+
+test('pagination maintains active category filter', function () {
+    $category = Category::factory()->create();
+    Artwork::factory()->for($category)->count(20)->create(['is_published' => true]);
+
+    Livewire::test(Index::class)
+        ->set('categoryId', $category->id)
+        ->assertViewHas('artworks', function ($artworks) {
+            return $artworks->count() === 12;
+        })
+        ->call('nextPage')
+        ->assertSet('categoryId', $category->id)
+        ->assertViewHas('artworks', function ($artworks) {
+            return $artworks->count() === 8;
+        });
+});
+
+test('clicking artwork card has correct link to detail page', function () {
+    $category = Category::factory()->create();
+    $artwork = Artwork::factory()->for($category)->create([
+        'is_published' => true,
+        'slug' => 'test-artwork-slug',
+    ]);
+
+    get(route('gallery.index'))
+        ->assertSuccessful()
+        ->assertSee(route('artworks.show', 'test-artwork-slug'));
+});
+
+test('invalid category ID in URL shows all artworks', function () {
+    $category = Category::factory()->create();
+    $artwork = Artwork::factory()->for($category)->create([
+        'is_published' => true,
+        'title' => 'Visible Artwork',
+    ]);
+
+    Livewire::test(Index::class)
+        ->set('categoryId', 99999)
+        ->assertSee('No artworks found');
+
+    Livewire::test(Index::class)
+        ->set('categoryId', null)
+        ->assertSee('Visible Artwork');
+});

@@ -148,3 +148,48 @@ test('can display artworks count', function () {
     Livewire::test(\App\Filament\Resources\Categories\Pages\ListCategories::class)
         ->assertCanSeeTableRecords($categories);
 });
+
+test('can sort categories by artworks count', function () {
+    $category1 = Category::factory()->create();
+    $category2 = Category::factory()->create();
+    $category3 = Category::factory()->create();
+
+    Artwork::factory()->count(5)->for($category1)->create();
+    Artwork::factory()->count(2)->for($category2)->create();
+    Artwork::factory()->count(8)->for($category3)->create();
+
+    Livewire::test(\App\Filament\Resources\Categories\Pages\ListCategories::class)
+        ->sortTable('artworks_count')
+        ->assertCanSeeTableRecords([$category2, $category1, $category3], inOrder: true)
+        ->sortTable('artworks_count', 'desc')
+        ->assertCanSeeTableRecords([$category3, $category1, $category2], inOrder: true);
+});
+
+test('new category appears in artwork form dropdown', function () {
+    $category = Category::factory()->create(['name' => 'New Test Category']);
+
+    Livewire::test(\App\Filament\Resources\Artworks\Pages\CreateArtwork::class)
+        ->assertFormFieldExists('category_id')
+        ->assertSuccessful();
+
+    $this->get(\App\Filament\Resources\Artworks\ArtworkResource::getUrl('create'))
+        ->assertSuccessful()
+        ->assertSee('New Test Category');
+});
+
+test('cannot create category with name exceeding 255 chars', function () {
+    Livewire::test(\App\Filament\Resources\Categories\Pages\CreateCategory::class)
+        ->fillForm([
+            'name' => str_repeat('a', 256),
+            'slug' => 'test-slug',
+        ])
+        ->call('create')
+        ->assertHasFormErrors(['name' => 'max']);
+});
+
+test('unauthenticated user cannot access category resource', function () {
+    auth()->logout();
+
+    $this->get(CategoryResource::getUrl('index'))
+        ->assertRedirect(route('filament.admin.auth.login'));
+});

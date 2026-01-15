@@ -24,6 +24,11 @@ class Category extends Model
         });
     }
 
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
+    }
+
     public function artworks(): HasMany
     {
         return $this->hasMany(Artwork::class);
