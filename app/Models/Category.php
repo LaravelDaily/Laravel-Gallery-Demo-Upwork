@@ -19,7 +19,7 @@ class Category extends Model
     {
         static::creating(function (Category $category) {
             if (! $category->slug) {
-                $category->slug = str($category->name)->slug();
+                $category->slug = str($category->name)->slug()->toString();
             }
         });
     }

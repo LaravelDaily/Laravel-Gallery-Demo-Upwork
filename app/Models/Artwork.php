@@ -36,7 +36,7 @@ class Artwork extends Model implements HasMedia
     {
         static::creating(function (Artwork $artwork) {
             if (! $artwork->slug) {
-                $artwork->slug = str($artwork->title)->slug();
+                $artwork->slug = str($artwork->title)->slug()->toString();
             }
         });
     }

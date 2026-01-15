@@ -2,10 +2,25 @@
 
 This document defines comprehensive test cases for the Art Gallery application using **Pest** (backend/feature tests) and **Playwright** (browser/E2E tests).
 
+## Coverage Requirement
+
+**Minimum test coverage: 90%**
+
+All backend tests must be run with the `--coverage` flag to verify coverage meets the minimum threshold:
+
+```bash
+# Run all tests with coverage
+php artisan test --coverage
+
+# Run with minimum coverage enforcement (fails if below 90%)
+php artisan test --coverage --min=90
+```
+
 **Test Guidelines:**
 - All tests use **random fake data** via factories and Faker
 - Tests are categorized as **Positive** (expected success) or **Negative** (expected failure/rejection)
 - Tests focus on **application-specific functionality only** (no default Laravel/Filament core tests)
+- **Coverage enforcement:** All PRs must maintain ≥90% code coverage
 
 ---
 
@@ -18,6 +33,8 @@ This document defines comprehensive test cases for the Art Gallery application u
    - [Filament Category Resource Tests](#4-filament-category-resource-tests)
    - [Media/Image Tests](#5-mediaimage-tests)
    - [Model Tests](#6-model-tests)
+   - [Console Command Tests](#7-console-command-tests)
+   - [Middleware Tests](#8-middleware-tests)
 2. [Playwright Tests](#playwright-tests)
    - [Public Gallery E2E Tests](#1-public-gallery-e2e-tests)
    - [Artwork Detail E2E Tests](#2-artwork-detail-e2e-tests)
@@ -181,7 +198,63 @@ This document defines comprehensive test cases for the Art Gallery application u
 | CMOD-P-002 | `category uses slug as route key` | Positive | `getRouteKeyName()` returns 'slug' | `Category::factory()->create()` |
 | CMOD-P-003 | `factory creates valid category` | Positive | Name and slug populated | `Category::factory()->create()` |
 | CMOD-P-004 | `artworks count returns correct number` | Positive | withCount works | `Category::factory()->has(Artwork::factory()->count(5))` |
+| CMOD-P-005 | `slug auto-generates from name on create` | Positive | Slug populates from name if empty | `Category::create(['name' => fake()->words(2, true)])` |
+| CMOD-P-006 | `slug preserved when explicitly set` | Positive | Custom slug not overwritten | `Category::create(['name' => 'Test', 'slug' => 'custom-slug'])` |
 | CMOD-N-001 | `deleting category with artworks throws exception` | Negative | Foreign key constraint | `Category::factory()->has(Artwork::factory())` then delete |
+
+**Additional Artwork Model Tests:**
+
+| Test Case ID | Test Name | Type | Description | Fake Data |
+|--------------|-----------|------|-------------|-----------|
+| AMOD-P-009 | `slug auto-generates from title on create` | Positive | Slug populates from title if empty | `Artwork::create(['title' => fake()->sentence()])` |
+| AMOD-P-010 | `slug preserved when explicitly set` | Positive | Custom slug not overwritten | `Artwork::create(['title' => 'Test', 'slug' => 'custom-slug'])` |
+| AMOD-P-011 | `media collection artworks is registered` | Positive | hasMediaCollection returns true | `$artwork->getRegisteredMediaCollections()` |
+| AMOD-P-012 | `media collection accepts jpeg mime type` | Positive | jpeg/jpg allowed | Check collection config |
+| AMOD-P-013 | `media collection accepts png mime type` | Positive | png allowed | Check collection config |
+| AMOD-P-014 | `media collection accepts webp mime type` | Positive | webp allowed | Check collection config |
+| AMOD-P-015 | `thumbnail conversion is registered` | Positive | 400x400 thumbnail config exists | `$artwork->getRegisteredMediaConversions()` |
+| AMOD-P-016 | `medium conversion is registered` | Positive | 800x800 medium config exists | `$artwork->getRegisteredMediaConversions()` |
+
+---
+
+### 7. Console Command Tests
+
+**File:** `tests/Feature/Commands/GenerateSitemapTest.php`
+
+| Test Case ID | Test Name | Type | Description | Fake Data |
+|--------------|-----------|------|-------------|-----------|
+| CMD-P-001 | `sitemap command executes successfully` | Positive | Command returns SUCCESS exit code | `Artwork::factory()->count(3)->create(['is_published' => true])` |
+| CMD-P-002 | `sitemap includes gallery index URL` | Positive | Root gallery URL in sitemap | No specific data needed |
+| CMD-P-003 | `sitemap includes published artworks` | Positive | Each published artwork URL present | `Artwork::factory()->count(5)->create(['is_published' => true])` |
+| CMD-P-004 | `sitemap excludes unpublished artworks` | Negative | Unpublished artwork URLs absent | `Artwork::factory()->create(['is_published' => false])` |
+| CMD-P-005 | `sitemap file is created in public folder` | Positive | sitemap.xml exists after command | Run command, check file exists |
+| CMD-P-006 | `sitemap uses correct artwork slugs` | Positive | URLs use slug not ID | `Artwork::factory()->create(['slug' => 'test-artwork'])` |
+| CMD-P-007 | `command outputs progress messages` | Positive | Info messages displayed | Check command output |
+| CMD-P-008 | `sitemap sets correct change frequencies` | Positive | Gallery=daily, artworks=weekly | Parse sitemap XML |
+| CMD-P-009 | `sitemap sets correct priorities` | Positive | Gallery=1.0, artworks=0.8 | Parse sitemap XML |
+| CMD-P-010 | `sitemap includes last modification dates` | Positive | lastmod tags present | Parse sitemap XML |
+
+---
+
+### 8. Middleware Tests
+
+**File:** `tests/Feature/Middleware/AddCacheHeadersTest.php`
+
+| Test Case ID | Test Name | Type | Description | Fake Data |
+|--------------|-----------|------|-------------|-----------|
+| MID-P-001 | `adds cache headers to storage requests` | Positive | Cache-Control header set for `/storage/*` | GET request to `/storage/test.jpg` |
+| MID-P-002 | `adds cache headers to build requests` | Positive | Cache-Control header set for `/build/*` | GET request to `/build/app.js` |
+| MID-P-003 | `adds cache headers to CSS files` | Positive | Cache-Control header set for `.css` | GET request to `/styles.css` |
+| MID-P-004 | `adds cache headers to JS files` | Positive | Cache-Control header set for `.js` | GET request to `/app.js` |
+| MID-P-005 | `adds cache headers to WebP images` | Positive | Cache-Control header set for `.webp` | GET request to `/image.webp` |
+| MID-P-006 | `adds cache headers to JPEG images` | Positive | Cache-Control header set for `.jpg/.jpeg` | GET request to `/image.jpg` |
+| MID-P-007 | `adds cache headers to PNG images` | Positive | Cache-Control header set for `.png` | GET request to `/image.png` |
+| MID-P-008 | `adds cache headers to SVG images` | Positive | Cache-Control header set for `.svg` | GET request to `/icon.svg` |
+| MID-P-009 | `cache header has correct max-age` | Positive | max-age=31536000 (1 year) | Check header value |
+| MID-P-010 | `cache header is immutable` | Positive | immutable directive present | Check header value |
+| MID-N-001 | `does not add cache headers to HTML pages` | Negative | No Cache-Control on `/` | GET request to `/` |
+| MID-N-002 | `does not add cache headers to API routes` | Negative | No Cache-Control on `/api/*` | GET request to API endpoint |
+| MID-N-003 | `does not add cache headers to admin pages` | Negative | No Cache-Control on `/admin/*` | GET request to admin panel |
 
 ---
 
@@ -373,6 +446,24 @@ it('displays artwork grid', function () {
 
 ## Running Tests
 
+### Coverage Requirements
+
+**All PRs must maintain ≥90% code coverage.** Use the following commands to verify:
+
+```bash
+# Run all tests with coverage report
+php artisan test --coverage
+
+# Run tests with minimum coverage enforcement (REQUIRED for CI/PRs)
+php artisan test --coverage --min=90
+
+# Coverage with specific file
+php artisan test --coverage tests/Feature/GalleryTest.php
+
+# Generate detailed HTML coverage report
+XDEBUG_MODE=coverage php artisan test --coverage-html=coverage-report
+```
+
 ### Pest Feature Tests
 
 ```bash
@@ -390,6 +481,36 @@ php artisan test --compact --filter="can "
 
 # Only negative cases
 php artisan test --compact --filter="cannot "
+
+# Run with coverage (recommended)
+php artisan test --coverage --min=90
+```
+
+### Console Command Tests
+
+```bash
+# Run sitemap command tests
+php artisan test --compact tests/Feature/Commands/GenerateSitemapTest.php
+
+# Run all command tests with coverage
+php artisan test --coverage tests/Feature/Commands
+```
+
+### Middleware Tests
+
+```bash
+# Run middleware tests
+php artisan test --compact tests/Feature/Middleware/AddCacheHeadersTest.php
+```
+
+### Unit/Model Tests
+
+```bash
+# Run model tests
+php artisan test --compact tests/Unit/Models
+
+# Run all unit tests with coverage
+php artisan test --coverage tests/Unit
 ```
 
 ### Playwright Browser Tests
@@ -403,4 +524,12 @@ php artisan test --compact tests/Browser/ResponsiveTest.php
 
 # With screenshots on failure
 php artisan test --compact tests/Browser --screenshot
+```
+
+### CI/CD Integration
+
+For continuous integration, use this command to fail the build if coverage drops below 90%:
+
+```bash
+php artisan test --coverage --min=90 --compact
 ```
